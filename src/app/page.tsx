@@ -3,7 +3,13 @@ import { HomeClient } from "@/components/home-client";
 import { redirect } from "next/navigation";
 
 export default async function HomePage() {
-  const session = await auth0.getSession();
+  let session = null;
+
+  try {
+    session = await auth0.getSession();
+  } catch {
+    session = null;
+  }
 
   if (session?.user) {
     redirect("/dashboard");
