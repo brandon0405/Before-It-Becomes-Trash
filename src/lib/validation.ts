@@ -5,7 +5,7 @@ import { SUPPORTED_LANGUAGES } from "@/lib/i18n";
 export const itemFormSchema = z.object({
   name: z.string().min(2).max(120),
   category: z.string().min(2).max(60),
-  damageDescription: z.string().min(10).max(1500),
+  damageDescription: z.string().min(6).max(1500),
   approximateAge: z.string().max(120).optional().or(z.literal("")),
   currentState: z.string().min(2).max(80),
 });
@@ -32,7 +32,7 @@ export const analyzeRequestSchema = z.object({
   language: z.enum(SUPPORTED_LANGUAGES).default("es"),
   imageDataUrl: z
     .string()
-    .max(8_000_000)
+    .max(12_000_000)
     .refine((value) => value.startsWith("data:image/"), "Invalid image data URL")
     .optional(),
 });

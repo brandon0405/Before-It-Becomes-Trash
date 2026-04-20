@@ -17,7 +17,12 @@ export async function POST(request: NextRequest) {
     const parsed = analyzeRequestSchema.safeParse(body);
 
     if (!parsed.success) {
-      return badRequestResponse("Invalid request payload for analysis");
+      const firstIssue = parsed.error.issues[0];
+      const field = firstIssue?.path?.join(".") || "request";
+      const message = firstIssue
+        ? `Invalid ${field}: ${firstIssue.message}`
+        : "Invalid request payload for analysis";
+      return badRequestResponse(message);
     }
 
     const analysis = await analyzeWithGemini(parsed.data.item, parsed.data.language, parsed.data.imageDataUrl);

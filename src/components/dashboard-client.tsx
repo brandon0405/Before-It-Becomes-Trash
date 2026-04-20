@@ -765,9 +765,19 @@ export function DashboardClient({ initialHistory, initialStats, userName, isDemo
         body: JSON.stringify({ item: formSnapshot, language, imageDataUrl: imageDataSnapshot ?? undefined }),
       });
 
-      const payload = await response.json();
+      let payload: { analysis?: AnalysisResult; error?: string } | null = null;
+
+      try {
+        payload = await response.json();
+      } catch {
+        payload = null;
+      }
 
       if (!response.ok) {
+        throw new Error(payload?.error ?? copy.failedAnalyzeRequest);
+      }
+
+      if (!payload?.analysis) {
         throw new Error(copy.failedAnalyzeRequest);
       }
 
