@@ -637,6 +637,84 @@ function recommendationClass(value: string) {
   }
 }
 
+const ANALYZE_IMAGE_MAX_LENGTH = 11_500_000;
+
+const IMAGE_PROCESSING_ERROR: Record<AppLanguage, { tooLarge: string; failed: string }> = {
+  en: {
+    tooLarge: "The uploaded image is too large. Try a smaller photo.",
+    failed: "Could not process this image. Try another photo format.",
+  },
+  es: {
+    tooLarge: "La imagen es demasiado pesada. Prueba con una foto más ligera.",
+    failed: "No se pudo procesar esta imagen. Prueba otro formato de foto.",
+  },
+  hi: {
+    tooLarge: "Image bahut badi hai. Chhoti photo try karein.",
+    failed: "Image process nahi ho saki. Dusri photo format try karein.",
+  },
+  zh: {
+    tooLarge: "上传的图片过大，请尝试更小的照片。",
+    failed: "无法处理该图片，请尝试其他图片格式。",
+  },
+  ar: {
+    tooLarge: "الصورة كبيرة جدا. استخدم صورة اصغر.",
+    failed: "تعذر معالجة هذه الصورة. جرب تنسيق صورة اخر.",
+  },
+  fr: {
+    tooLarge: "L'image est trop volumineuse. Essayez une photo plus legere.",
+    failed: "Impossible de traiter cette image. Essayez un autre format.",
+  },
+  pt: {
+    tooLarge: "A imagem esta muito grande. Tente uma foto menor.",
+    failed: "Nao foi possivel processar esta imagem. Tente outro formato.",
+  },
+};
+
+async function fileToOptimizedDataUrl(file: File): Promise<string> {
+  const tempUrl = URL.createObjectURL(file);
+
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const loadedImage = new window.Image();
+      loadedImage.onload = () => resolve(loadedImage);
+      loadedImage.onerror = () => reject(new Error("IMAGE_DECODE_FAILED"));
+      loadedImage.src = tempUrl;
+    });
+
+    const maxSide = 1280;
+    const longerSide = Math.max(image.naturalWidth, image.naturalHeight);
+    const scale = longerSide > maxSide ? maxSide / longerSide : 1;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("CANVAS_CONTEXT_UNAVAILABLE");
+    }
+
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    let quality = 0.82;
+    let dataUrl = canvas.toDataURL("image/jpeg", quality);
+
+    while (dataUrl.length > ANALYZE_IMAGE_MAX_LENGTH && quality > 0.46) {
+      quality -= 0.08;
+      dataUrl = canvas.toDataURL("image/jpeg", quality);
+    }
+
+    if (dataUrl.length > ANALYZE_IMAGE_MAX_LENGTH) {
+      throw new Error("IMAGE_TOO_LARGE");
+    }
+
+    return dataUrl;
+  } finally {
+    URL.revokeObjectURL(tempUrl);
+  }
+}
+
 export function DashboardClient({ initialHistory, initialStats, userName, isDemo = false }: DashboardClientProps) {
   const { language } = useAppLanguage();
   const copy = UI_COPY[language];
@@ -696,20 +774,32 @@ export function DashboardClient({ initialHistory, initialStats, userName, isDemo
       return;
     }
 
-    const reader = new FileReader();
+    const messages = IMAGE_PROCESSING_ERROR[language];
 
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : null;
-      setImageDataUrl(result);
-      setImagePreviewUrl(result);
-    };
+    (async () => {
+      try {
+        const optimizedDataUrl = await fileToOptimizedDataUrl(file);
+        setError(null);
+        setImageDataUrl(optimizedDataUrl);
+        setImagePreviewUrl(optimizedDataUrl);
+      } catch (error) {
+        const message = error instanceof Error && error.message === "IMAGE_TOO_LARGE"
+          ? messages.tooLarge
+          : messages.failed;
 
-    reader.onerror = () => {
+        setError(message);
+        setImageDataUrl(null);
+        setImagePreviewUrl(null);
+
+        if (imageFileInputRef.current) {
+          imageFileInputRef.current.value = "";
+        }
+      }
+    })().catch(() => {
+      setError(messages.failed);
       setImageDataUrl(null);
       setImagePreviewUrl(null);
-    };
-
-    reader.readAsDataURL(file);
+    });
   }
 
   async function refreshHistoryAndStats() {
@@ -774,6 +864,10 @@ export function DashboardClient({ initialHistory, initialStats, userName, isDemo
       }
 
       if (!response.ok) {
+        if (response.status === 413) {
+          throw new Error(IMAGE_PROCESSING_ERROR[language].tooLarge);
+        }
+
         throw new Error(payload?.error ?? copy.failedAnalyzeRequest);
       }
 
