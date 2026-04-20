@@ -290,7 +290,7 @@ function getResourceStep(item: ItemFormInput, recommendation: AnalysisResult["re
 
   const prefixByLanguage: Record<AppLanguage, string> = {
     en: "Guide:",
-    es: "Guia:",
+    es: "Guía:",
     hi: "Guide:",
     zh: "指南:",
     ar: "دليل:",
@@ -307,7 +307,7 @@ function getReuseIdea(item: ItemFormInput, language: AppLanguage) {
   if (category.includes("textile") || category.includes("footwear")) {
     const textileIdeas: Record<AppLanguage, string> = {
       en: "Upcycling idea: convert usable fabric sections into cleaning cloths, tote patches, or small organizer pouches.",
-      es: "Idea de reutilizacion: convierte las partes de tela en buen estado en panos de limpieza, parches para bolsos o pequenos organizadores.",
+      es: "Idea de reutilización: convierte las partes de tela en buen estado en paños de limpieza, parches para bolsos o pequeños organizadores.",
       hi: "Reuse idea: usable fabric ko cleaning cloth, tote patch ya small organizer pouch me convert karein.",
       zh: "再利用建议：将可用布料改造成清洁布、手提袋补丁或小收纳袋。",
       ar: "فكرة لاعادة الاستخدام: حول الاجزاء السليمة من القماش الى قطع تنظيف او رقع للحقائب او حافظات صغيرة.",
@@ -320,7 +320,7 @@ function getReuseIdea(item: ItemFormInput, language: AppLanguage) {
 
   const genericIdeas: Record<AppLanguage, string> = {
     en: "Upcycling idea: repurpose functional components for secondary household use before disposal.",
-    es: "Idea de reutilizacion: reaprovecha componentes funcionales para un segundo uso en el hogar antes de descartar.",
+    es: "Idea de reutilización: reaprovecha componentes funcionales para un segundo uso en el hogar antes de descartar.",
     hi: "Reuse idea: usable components ko ghar me secondary use ke liye repurpose karein.",
     zh: "再利用建议：在报废前，将可用部件改作家庭二次用途。",
     ar: "فكرة لاعادة الاستخدام: اعد توظيف الاجزاء الصالحة لاستخدام منزلي ثانوي قبل التخلص النهائي.",
@@ -344,7 +344,7 @@ function enrichAnalysis(
     if (!hasToolsHint) {
       const toolStepByLanguage: Record<AppLanguage, string> = {
         en: "Prepare tools/materials first (cleaning cloth, adhesive or thread, basic hand tools) and isolate a safe workspace.",
-        es: "Prepara herramientas/materiales primero (pano, adhesivo o hilo, herramientas manuales basicas) y trabaja en un espacio seguro.",
+        es: "Prepara herramientas/materiales primero (paño, adhesivo o hilo, herramientas manuales básicas) y trabaja en un espacio seguro.",
         hi: "Pehle tools/material ready karein (cleaning cloth, adhesive ya thread, basic hand tools) aur safe workspace banayein.",
         zh: "先准备工具和材料（清洁布、胶粘剂或线材、基础手工具），并确保操作环境安全。",
         ar: "جهز الادوات والمواد اولا (قطعة تنظيف، لاصق او خيط، ادوات يدوية بسيطة) واعمل في مساحة آمنة.",
@@ -414,8 +414,8 @@ function createFallbackAnalysis(item: ItemFormInput, language: AppLanguage): Ana
     ],
     es: [
       "Inspecciona el objeto y confirma que no exista riesgo de seguridad.",
-      "Limpia y estabiliza la zona danada antes de reparar o reutilizar.",
-      "Aplica la accion recomendada y verifica funcionamiento al finalizar.",
+      "Limpia y estabiliza la zona dañada antes de reparar o reutilizar.",
+      "Aplica la acción recomendada y verifica funcionamiento al finalizar.",
     ],
     hi: [
       "वस्तु की जांच करें और सुनिश्चित करें कि कोई सुरक्षा जोखिम न हो।",
